@@ -5,7 +5,17 @@
 extern "C" {
 #endif
 
-#define KBStringArrayLimit 100
+#define ArrayReservedSpaceForNewStrings 100
+
+/*
+  Some naming rationale :P
+  CStringO meanse CString Organized
+  OString means OrganizedString
+  org_arr means OrganizedString Array
+  org_str meanse OrganizedString :P
+*/
+
+typedef unsigned short stringsize;
 
 struct CStringO
 {
@@ -15,17 +25,22 @@ struct CStringO
 
 struct CStringOArray
 {
-    struct CStringO * kbstr;
+    struct CStringO * array;
     unsigned short array_length;
     unsigned short array_max_length;
 };
 
-unsigned long Cstr2KBstr_Hash(struct CStringO * kbstr,char * cstr);
-inline void KBstr_Delete(struct CStringO * kbstr);
+char * CStringOrganizer_Version();
 
-void AddToStringArray(struct CStringOArray * kbarr,char * cstr);
-unsigned long GetArrayLength(struct CStringOArray * kbarr);
-void DeleteStringArray(struct CStringOArray * kbarr);
+unsigned long Organize_Cstr_Hash(struct CStringO * org_str,char * cstr);
+char Organize_Cstr(struct CStringO * org_str,char * cstr);
+
+void Create_OString(struct CStringO * org_str);
+void Delete_OString(struct CStringO * org_str);
+
+char AddToOStringArray(struct CStringOArray * org_arr,char * cstr);
+unsigned long GetArrayLength(struct CStringOArray * org_arr);
+char DeleteOStringArray(struct CStringOArray * org_arr);
 
 
 
