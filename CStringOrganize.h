@@ -32,14 +32,15 @@ struct CStringOArray
 
 char * CStringOrganizer_Version();
 
-unsigned long Organize_Cstr_Hash(struct CStringO * org_str,char * cstr);
-char Organize_Cstr(struct CStringO * org_str,char * cstr);
+unsigned long StoreCstr_Hash(struct CStringO * org_str,char * cstr);
+char StoreCstr(struct CStringO * org_str,char * cstr);
 
 void Create_OString(struct CStringO * org_str);
 void Delete_OString(struct CStringO * org_str);
 
 char AddToOStringArray(struct CStringOArray * org_arr,char * cstr);
-unsigned long GetArrayLength(struct CStringOArray * org_arr);
+unsigned long GetOStringArrayLength(struct CStringOArray * org_arr);
+signed int CheckOStringArrayContainsCStr(struct CStringOArray * ostr_array,char * cstr);
 char DeleteOStringArray(struct CStringOArray * org_arr);
 
 

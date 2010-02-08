@@ -14,14 +14,25 @@ char * CStringOrganizer_Version()
 // *******************************************************************************
 // HELPER FUNCTIONS
 // *******************************************************************************
-void UpcaseIt(unsigned char * text,unsigned int textsize) //Metatrepei String se Upcase
+void cso_UpcaseIt(unsigned char * text,unsigned int textsize) //Metatrepei String se Upcase
 {
   unsigned int i;
   for (i=0; i<textsize; i++) text[i]=toupper(text[i]);
 }
 
+char cstrEqualNoCase(char * str1,char * str2)
+{
+  int len = strlen(str1);
+  int i;
+  if ( len != strlen(str2) ) { return 0; }
+  for (i=0; i<len; i++ )
+   {
+     if ( toupper(str1[i]) != toupper(str2[i]) ) { return 0; }
+   }
+  return 1;
+}
 
-inline unsigned long inline_sdbm(char *str)
+inline unsigned long cso_inline_sdbm(char *str)
 {
   unsigned long hash = 0;
   int c;
@@ -39,20 +50,7 @@ inline unsigned long inline_sdbm(char *str)
 // *******************************************************************************
 // STRING FUNCTIONS
 // *******************************************************************************
-unsigned long Organize_Cstr_Hash(struct CStringO * org_str,char * cstr)
-{
-    // If org_str contains another string it will be replaced
-    if  ( org_str->str!=0 ) { free(org_str->str); }
-    unsigned short len = strlen(cstr);
-
-    org_str->str = (char *) malloc(sizeof(char) * (len+1) ); // + zero termination
-    org_str->str_length = len;
-    strcpy (org_str->str , cstr) ;
-
-    return inline_sdbm(cstr);
-}
-
-char Organize_Cstr(struct CStringO * org_str,char * cstr)
+char StoreCstr(struct CStringO * org_str,char * cstr)
 {
     // If org_str contains another string it will be replaced
     if  ( org_str->str!=0 ) { free(org_str->str); }
@@ -65,11 +63,10 @@ char Organize_Cstr(struct CStringO * org_str,char * cstr)
     return 1;
 }
 
-void Create_OString(struct CStringO * org_str)
+unsigned long StoreCstr_Hash(struct CStringO * org_str,char * cstr)
 {
-    //if  ( org_str->str!=0 ) { free(org_str->str); }
-    // We do nothing , when we need it it will be auto allocated!
-    return;
+    if ( StoreCstr(org_str,cstr)==1 ) {  return cso_inline_sdbm(cstr); }
+    return 0;
 }
 
 void Delete_OString(struct CStringO * org_str)
@@ -116,6 +113,7 @@ char CreateOStringArray(struct CStringOArray * ostr_array,unsigned int array_len
 
 char IncreaseOStringArrayLength(struct CStringOArray * ostr_array,unsigned int inc_array_length)
 {
+   fprintf(stderr,"IncreaseOStringArrayLength Called!\n");
    if  ( ostr_array->array==0 ) {  return CreateOStringArray(ostr_array,inc_array_length); } // No array increasing means creating! :)
    else
    {
@@ -131,6 +129,8 @@ char IncreaseOStringArrayLength(struct CStringOArray * ostr_array,unsigned int i
 
      free (ostr_array->array);
      ostr_array->array = bigger_ostr_array;
+     ostr_array->array_max_length+=inc_array_length;
+
 
      return 1;
    }
@@ -167,18 +167,27 @@ char AddToOStringArray(struct CStringOArray * org_arr,char * cstr)
     if  (org_arr->array_length+1>=org_arr->array_max_length)
     {
        // Reallocate String Memory!
+       IncreaseOStringArrayLength(org_arr,ArrayReservedSpaceForNewStrings);
     }
 
     unsigned int mem = org_arr->array_length;
-    char retres = Organize_Cstr(&org_arr->array[mem],cstr);
+    char retres = StoreCstr(&org_arr->array[mem],cstr);
     if (retres == 1 ) org_arr->array_length+=1;
 
     return retres;
 }
 
+signed int CheckOStringArrayContainsCStr(struct CStringOArray * ostr_array,char * cstr)
+{
+     int i;
+     for ( i = 0; i<ostr_array->array_max_length; i++ )
+     {
+          if ( cstrEqualNoCase(ostr_array->array[i].str,cstr)!=0 ) { return i; }
+     }
+  return -1;
+}
 
-
-unsigned long GetArrayLength(struct CStringOArray * org_arr)
+unsigned long GetOStringArrayLength(struct CStringOArray * org_arr)
 {
     if  ( org_arr->array==0 ) return 0; // No array -> 0 length ..!
     return org_arr->array_length;
